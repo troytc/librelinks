@@ -15,7 +15,7 @@ import useMediaQuery from '@/hooks/use-media-query';
 import PopoverMobile from './popover-mobile';
 import { Drawer } from 'vaul';
 
-const PopoverDesktop = ({ id, title, url, archived }) => {
+const PopoverDesktop = ({ id, title, url, archived, isHeader }) => {
   const [isArchived, setIsArchived] = useState(archived);
   const [openPopover, setOpenPopover] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -106,6 +106,7 @@ const PopoverDesktop = ({ id, title, url, archived }) => {
     archived,
     isArchived,
     closeDrawer,
+    isHeader,
   };
 
   return (
@@ -143,6 +144,7 @@ const PopoverDesktop = ({ id, title, url, archived }) => {
               id={id}
               title={title}
               url={url}
+              isHeader={isHeader}
             />
           </Dialog.Root>
           <AlertDialog.Root>

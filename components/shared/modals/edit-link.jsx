@@ -7,10 +7,13 @@ import axios from 'axios';
 import { isValidUrl, signalIframe } from '@/utils/helpers';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useCurrentUser from '@/hooks/useCurrentUser';
+import * as Switch from '@radix-ui/react-switch';
+import TooltipWrapper from '@/components/utils/tooltip';
 
-const EditLinkModal = ({ id, title, url, close }) => {
+const EditLinkModal = ({ id, title, url, close, isHeader: initialIsHeader }) => {
   const [newTitle, setNewTitle] = useState(title);
-  const [newUrl, setNewUrl] = useState(url);
+  const [newUrl, setNewUrl] = useState(url || '');
+  const [isHeader, setIsHeader] = useState(!!initialIsHeader);
 
   const [urlError, setUrlError] = useState(false);
 
@@ -19,10 +22,11 @@ const EditLinkModal = ({ id, title, url, close }) => {
   const userId = currentUser?.id ?? null;
 
   const editMutation = useMutation(
-    async ({ newTitle, newUrl }) => {
+    async ({ newTitle, newUrl, isHeader }) => {
       await axios.patch(`/api/links/${id}`, {
         newTitle,
         newUrl,
+        isHeader,
       });
     },
     {
@@ -34,15 +38,15 @@ const EditLinkModal = ({ id, title, url, close }) => {
   );
 
   const handleEditLink = async () => {
-    if (newTitle.trim() === '' || newUrl.trim() === '') {
+    if (newTitle.trim() === '' || (!isHeader && newUrl.trim() === '')) {
       close();
       toast.error('Please fill the form');
       return;
     }
     close(); // close drawer
-    await toast.promise(editMutation.mutateAsync({ newTitle, newUrl }), {
-      loading: 'Editing link',
-      success: 'Link edited successfully',
+    await toast.promise(editMutation.mutateAsync({ newTitle, newUrl: isHeader ? '' : newUrl, isHeader }), {
+      loading: 'Editing item',
+      success: isHeader ? 'Header edited successfully' : 'Link edited successfully',
       error: 'An error occured',
     });
   };
@@ -62,12 +66,12 @@ const EditLinkModal = ({ id, title, url, close }) => {
           <Dialog.Overlay className="fixed inset-0 backdrop-blur-sm bg-gray-800 bg-opacity-50 sm:w-full" />
           <Dialog.Content
             className=" contentShow fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                		rounded-2xl bg-white p-6 sm:p-8 lg:max-w-3xl w-[350px] sm:w-[500px] shadow-lg 
-               			md:max-w-lg max-md:max-w-lg focus:outline-none"
+                  		rounded-2xl bg-white p-6 sm:p-8 lg:max-w-3xl w-[350px] sm:w-[500px] shadow-lg 
+                			md:max-w-lg max-md:max-w-lg focus:outline-none"
           >
             <div className="flex flex-row justify-between items-center mb-4">
               <Dialog.Title className="text-xl text-center font-medium mb-2 sm:mb-0 sm:mr-4">
-                Edit Link
+                Edit {isHeader ? 'Header' : 'Link'}
               </Dialog.Title>
               <Dialog.Close className="flex flex-end justify-end">
                 <div
@@ -86,36 +90,48 @@ const EditLinkModal = ({ id, title, url, close }) => {
                   className="block w-full h-10 px-4 py-6 mb-2 leading-tight text-gray-700 border rounded-2xl appearance-none focus:outline-none focus:shadow-outline"
                   id="name"
                   type="text"
-                  placeholder="Title"
+                  placeholder={isHeader ? 'Header text' : 'Title'}
                 />
               </div>
-              <div className="relative">
-                <input
-                  value={newUrl}
-                  onChange={handleUrlChange}
-                  className="block w-full h-10 px-4 py-6 mb-2 leading-tight text-gray-700 border rounded-2xl appearance-none focus:outline-none focus:shadow-outline"
-                  id="name"
-                  type="url"
-                  placeholder="URL"
+              {!isHeader && (
+                <div className="relative">
+                  <input
+                    value={newUrl}
+                    onChange={handleUrlChange}
+                    className="block w-full h-10 px-4 py-6 mb-2 leading-tight text-gray-700 border rounded-2xl appearance-none focus:outline-none focus:shadow-outline"
+                    id="name"
+                    type="url"
+                    placeholder="URL"
+                  />
+                  {urlError && (
+                    <small className="text-red-500 text-sm">Enter a valid url</small>
+                  )}
+                </div>
+              )}
+
+              <div className="p-2 relative flex justify-between gap-2 text-gray-800 my-4">
+                <TooltipWrapper
+                  title="Make this a non-clickable centered header"
+                  component={<h3 className="text-md lg:text-lg">Is header?</h3>}
                 />
-                {urlError && (
-                  <small className="text-red-500 text-sm">
-                    Enter a valid url
-                  </small>
-                )}
+                <Switch.Root
+                  checked={isHeader}
+                  onCheckedChange={() => setIsHeader(!isHeader)}
+                  className="w-[39px] h-[21px] bg-[#E4E4E7] rounded-full relative focus:shadow-black border border-slate-200 data-[state=checked]:bg-slate-900 outline-none cursor-default lg:w-[42px] lg:h-[25px]"
+                >
+                  <Switch.Thumb className="block w-[17px] h-[17px] bg-white rounded-full shadow-[0_2px_2px] transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[19px] lg:w-[21px] lg:h-[21px]" />
+                </Switch.Root>
               </div>
 
               <Dialog.Close asChild>
                 <button
                   onClick={handleEditLink}
                   className="inline-block w-full px-4 py-4 leading-none 
-                        			text-lg mt-2 text-white bg-slate-800 hover:bg-slate-900 rounded-3xl 
-                        			focus:outline-none focus:shadow-outline-blue"
+                         			text-lg mt-2 text-white bg-slate-800 hover:bg-slate-900 rounded-3xl 
+                         			focus:outline-none focus:shadow-outline-blue"
                 >
-                  Edit link{' '}
-                  <span role="img" aria-label="sparkling star">
-                    ✨
-                  </span>
+                  {isHeader ? 'Edit header' : 'Edit link'}{' '}
+                  <span role="img" aria-label="sparkling star">✨</span>
                 </button>
               </Dialog.Close>
             </form>

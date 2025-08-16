@@ -42,87 +42,107 @@ const LinkCard = (props) => {
         >
           <GripVertical color="grey" size={17} />
         </div>
-        {!props.archived ? (
-          <Image
-            src={`${GOOGLE_FAVICON_URL}${apexDomain}`}
-            alt={apexDomain}
-            className="h-8 w-8 blur-0 rounded-full sm:h-10 sm:w-10"
-            unoptimized
-            width={20}
-            height={20}
-            priority
-          />
+        {props.isHeader ? (
+          <div className="flex-1 p-2 h-full">
+            <div className="w-full flex items-center justify-center">
+              <p className="text-gray-700 text-sm font-semibold lg:text-base">
+                {props.title}
+              </p>
+            </div>
+          </div>
         ) : (
-          <TooltipWrapper
-            title="This link has been archived by you"
-            component={<ArchiveSVG />}
-          />
-        )}
-        <div className="flex-1 p-2 h-full relative">
-          <div className="flex">
-            <div className="w-full pr-3">
-              <div className="grid mb-1 w-full grid-cols-[minmax(0,_90%)] items-baseline">
-                <div className=" w-full row-start-1 col-start-1 items-center">
-                  <div
-                    target="_blank"
-                    className="flex items-center max-w-full rounded-[2px] outline-offset-2 outline-2 gap-2 lg:gap-4"
-                  >
-                    <p className="truncate w-fit max-w-[80px] text-gray-500 text-sm whitespace-nowrap overflow-hidden font-semibold lg:w-fit lg:max-w-[150px]">
-                      {props.title}
-                    </p>
+          <>
+            {!props.archived ? (
+              <Image
+                src={`${GOOGLE_FAVICON_URL}${apexDomain}`}
+                alt={apexDomain}
+                className="h-8 w-8 blur-0 rounded-full sm:h-10 sm:w-10"
+                unoptimized
+                width={20}
+                height={20}
+                priority
+              />
+            ) : (
+              <TooltipWrapper
+                title="This link has been archived by you"
+                component={<ArchiveSVG />}
+              />
+            )}
+            <div className="flex-1 p-2 h-full relative">
+              <div className="flex">
+                <div className="w-full pr-3">
+                  <div className="grid mb-1 w-full grid-cols-[minmax(0,_90%)] items-baseline">
+                    <div className=" w-full row-start-1 col-start-1 items-center">
+                      <div
+                        target="_blank"
+                        className="flex items-center max-w-full rounded-[2px] outline-offset-2 outline-2 gap-2 lg:gap-4"
+                      >
+                        <p className="truncate w-fit max-w-[80px] text-gray-500 text-sm whitespace-nowrap overflow-hidden font-semibold lg:w-fit lg:max-w-[150px]">
+                          {props.title}
+                        </p>
 
-                    <div className="flex justify-between items-start">
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          onClick={handleCopyLink}
-                          href="#"
-                          className="group rounded-full bg-gray-100 p-1.5 transition-all duration-75 hover:scale-105 hover:bg-blue-100 active:scale-95"
-                        >
-                          <Copy color="grey" size={15} />
-                        </Link>
+                        <div className="flex justify-between items-start">
+                          <div className="flex flex-wrap gap-2">
+                            <Link
+                              onClick={handleCopyLink}
+                              href="#"
+                              className="group rounded-full bg-gray-100 p-1.5 transition-all duration-75 hover:scale-105 hover:bg-blue-100 active:scale-95"
+                            >
+                              <Copy color="grey" size={15} />
+                            </Link>
 
-                        <Link
-                          href="/admin/analytics"
-                          className="flex items-center space-x-1 rounded-md bg-gray-100 px-2 py-0.5 transition-all duration-75 hover:scale-105 hover:bg-blue-100 active:scale-100"
+                            <Link
+                              href="/admin/analytics"
+                              className="flex items-center space-x-1 rounded-md bg-gray-100 px-2 py-0.5 transition-all duration-75 hover:scale-105 hover:bg-blue-100 active:scale-100"
+                            >
+                              <BarChart color="grey" size={15} />
+                              <p className="whitespace-nowrap text-sm text-gray-500">
+                                {props.clicks}
+                                <span className="ml-1 hidden sm:inline-block">
+                                  clicks
+                                </span>
+                              </p>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="">
+                      <div className="row-start-1 col-start-1 inline-flex">
+                        <a
+                          target="_blank"
+                          href={props.url}
+                          className="flex items-center max-w-full rounded-[2px] outline-offset-2 outline-2"
                         >
-                          <BarChart color="grey" size={15} />
-                          <p className="whitespace-nowrap text-sm text-gray-500">
-                            {props.clicks}
-                            <span className="ml-1 hidden sm:inline-block">
-                              clicks
-                            </span>
+                          <p className="text-gray-500 w-[200px] text-sm lg:w-[320px] whitespace-nowrap overflow-hidden font-semibold text-ellipsis">
+                            {props.url}
                           </p>
-                        </Link>
+                        </a>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="">
-                  <div className="row-start-1 col-start-1 inline-flex">
-                    <a
-                      target="_blank"
-                      href={props.url}
-                      className="flex items-center max-w-full rounded-[2px] outline-offset-2 outline-2"
-                    >
-                      <p className="text-gray-500 w-[200px] text-sm lg:w-[320px] whitespace-nowrap overflow-hidden font-semibold text-ellipsis">
-                        {props.url}
-                      </p>
-                    </a>
+                <button className="flex justify-center items-center ">
+                  <div className="flex items-center">
+                    <small className="mr-8 hidden whitespace-nowrap text-sm text-gray-500 sm:block">
+                      Added {timeAgo(props.createdAt, true)}
+                    </small>
+                    <PopoverDesktop {...props} />
                   </div>
-                </div>
+                </button>
               </div>
             </div>
-            <button className="flex justify-center items-center ">
-              <div className="flex items-center">
-                <small className="mr-8 hidden whitespace-nowrap text-sm text-gray-500 sm:block">
-                  Added {timeAgo(props.createdAt, true)}
-                </small>
-                <PopoverDesktop {...props} />
-              </div>
-            </button>
+          </>
+        )}
+        {!props.isHeader && (
+          <></>
+        )}
+        {props.isHeader && (
+          <div className="ml-auto">
+            <PopoverDesktop {...props} />
           </div>
-        </div>
+        )}
       </div>
     </>
   );

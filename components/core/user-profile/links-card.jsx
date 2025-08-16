@@ -11,6 +11,24 @@ const LinkCard = (props) => {
     boxShadow: hasShadowProp ? `5px 5px 0 0 ${props.theme.neutral}` : '',
   };
 
+  if (props.isHeader) {
+    return (
+      <div
+        className={`flex items-center ${props.buttonStyle} border mb-3 w-full sm:w-64 md:w-72 lg:w-96 xl:w-3/4 2xl:w-3/5 max-w-3xl lg:p-1 lg:mb-6`}
+        style={style}
+      >
+        <div className="flex text-center w-full">
+          <h2
+            style={{ color: props.theme.accent }}
+            className="text-[13px] flex justify-center items-center font-semibold w-full text-gray-700 lg:text-lg py-3"
+          >
+            {props.title}
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <a
       href={props.url}

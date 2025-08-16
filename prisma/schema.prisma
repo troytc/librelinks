@@ -56,10 +56,11 @@ model Account {
 model Link {
       id         String     @id @default(auto()) @map("_id") @db.ObjectId
       title      String
-      url        String
+      url        String?
       archived   Boolean    @default(false)
       order       Int
       isSocial   Boolean    @default(false)
+      isHeader   Boolean    @default(false)
       // Link metadata
       clicks      Int       @default(0) // number of clicks
       createdAt   DateTime  @default(now())

@@ -15,6 +15,7 @@ const AddLinkModal = () => {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [isSocial, setIsSocial] = useState(false);
+  const [isHeader, setIsHeader] = useState(false);
   const [urlError, setUrlError] = useState(false);
 
   const { data: currentUser } = useCurrentUser();
@@ -26,12 +27,13 @@ const AddLinkModal = () => {
   const order = userLinks?.length;
 
   const addLinkMutation = useMutation(
-    async ({ title, url, order }) => {
+    async ({ title, url, order, isHeader }) => {
       await axios.post('/api/links', {
         title,
         url,
         order,
         isSocial,
+        isHeader,
       });
     },
     {
@@ -40,21 +42,25 @@ const AddLinkModal = () => {
         setTitle('');
         setUrl('');
         setIsSocial(false);
+        setIsHeader(false);
         signalIframe();
       },
     }
   );
 
   const submitLink = async () => {
-    if (title.trim() === '' || url.trim() === '') {
+    if (title.trim() === '' || (!isHeader && url.trim() === '')) {
       toast.error('Please fill the form');
       return;
     }
-    await toast.promise(addLinkMutation.mutateAsync({ title, url, order }), {
-      loading: 'Adding link',
-      success: 'Link added successfully',
-      error: 'An error occured',
-    });
+    await toast.promise(
+      addLinkMutation.mutateAsync({ title, url: isHeader ? '' : url, order, isHeader }),
+      {
+        loading: 'Adding item',
+        success: isHeader ? 'Header added successfully' : 'Link added successfully',
+        error: 'An error occured',
+      }
+    );
   };
 
   const handleUrlChange = (event) => {
@@ -72,7 +78,7 @@ const AddLinkModal = () => {
         <Dialog.Content className="contentShow fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 sm:p-8 lg:max-w-3xl w-[350px] sm:w-[500px] shadow-lg md:max-w-lg max-md:max-w-lg focus:outline-none">
           <div className="flex flex-row justify-between items-center mb-4">
             <Dialog.Title className="text-xl text-center font-medium mb-2 sm:mb-0 sm:mr-4">
-              Create a new Link
+              Create a new {isHeader ? 'Header' : 'Link'}
             </Dialog.Title>
             <Dialog.Close className="flex flex-end justify-end">
               <div className="p-2 rounded-full flex justify-center items-center bg-gray-100 hover:bg-gray-300">
@@ -88,40 +94,55 @@ const AddLinkModal = () => {
                 className="block w-full h-10 px-4 py-6 mb-2 leading-tight text-gray-700 border rounded-2xl appearance-none focus:outline-none focus:shadow-outline"
                 id="name"
                 type="text"
-                placeholder="Title"
+                placeholder={isHeader ? 'Header text' : 'Title'}
               />
             </div>
-            <div className="relative">
-              <input
-                value={url}
-                onChange={handleUrlChange}
-                className={`block w-full h-10 px-4 py-6 mb-2 leading-tight text-gray-700 border rounded-2xl appearance-none focus:outline-none ${
-                  urlError ? 'border-red-500' : 'focus:shadow-outline'
-                }`}
-                id="url"
-                type="url"
-                placeholder="URL"
+            {!isHeader && (
+              <div className="relative">
+                <input
+                  value={url}
+                  onChange={handleUrlChange}
+                  className={`block w-full h-10 px-4 py-6 mb-2 leading-tight text-gray-700 border rounded-2xl appearance-none focus:outline-none ${
+                    urlError ? 'border-red-500' : 'focus:shadow-outline'
+                  }`}
+                  id="url"
+                  type="url"
+                  placeholder="URL"
+                />
+                {urlError && (
+                  <small className="text-red-500 text-sm">
+                    Enter a valid URL (ex: https://hello.com)
+                  </small>
+                )}
+              </div>
+            )}
+
+            <div className="p-2 relative flex justify-between gap-2 text-gray-800 my-4">
+              <TooltipWrapper
+                title="Add a non-clickable centered header text between your links"
+                component={<h3 className="text-md lg:text-lg">Add as a header?</h3>}
               />
-              {urlError && (
-                <small className="text-red-500 text-sm">
-                  Enter a valid URL (ex: https://hello.com)
-                </small>
-              )}
+              <Switch.Root
+                checked={isHeader}
+                onCheckedChange={() => setIsHeader(!isHeader)}
+                className="w-[39px] h-[21px] bg-[#E4E4E7] rounded-full relative focus:shadow-black border border-slate-200 data-[state=checked]:bg-slate-900 outline-none cursor-default lg:w-[42px] lg:h-[25px]"
+              >
+                <Switch.Thumb className="block w-[17px] h-[17px] bg-white rounded-full shadow-[0_2px_2px] transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[19px] lg:w-[21px] lg:h-[21px]" />
+              </Switch.Root>
             </div>
 
             <div className="p-2 relative flex justify-between gap-2 text-gray-800 my-4">
               <TooltipWrapper
                 title="Twitter, Instagram, LinkedIn, etc"
                 component={
-                  <h3 className="text-md lg:text-lg">
-                    Add as a social media link?
-                  </h3>
+                  <h3 className="text-md lg:text-lg">Add as a social media link?</h3>
                 }
               />
               <Switch.Root
                 checked={isSocial}
                 onCheckedChange={() => setIsSocial(!isSocial)}
                 className="w-[39px] h-[21px] bg-[#E4E4E7] rounded-full relative focus:shadow-black border border-slate-200 data-[state=checked]:bg-slate-900 outline-none cursor-default lg:w-[42px] lg:h-[25px]"
+                disabled={isHeader}
               >
                 <Switch.Thumb className="block w-[17px] h-[17px] bg-white rounded-full shadow-[0_2px_2px] transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[19px] lg:w-[21px] lg:h-[21px]" />
               </Switch.Root>
@@ -130,16 +151,16 @@ const AddLinkModal = () => {
             <Dialog.Close asChild>
               <button
                 onClick={submitLink}
-                disabled={urlError}
+                disabled={!isHeader && urlError}
                 className={`inline-block w-full px-4 py-4 leading-none 
-                     			 text-lg mt-2 text-white rounded-3xl 
-                      			${
-                              !urlError
-                                ? 'bg-slate-800 hover:bg-slate-900'
-                                : 'bg-slate-500'
-                            }`}
+                           text-lg mt-2 text-white rounded-3xl 
+                              ${
+                                !(!isHeader && urlError)
+                                  ? 'bg-slate-800 hover:bg-slate-900'
+                                  : 'bg-slate-500'
+                              }`}
               >
-                Create Link{' '}
+                {isHeader ? 'Create Header' : 'Create Link'}{' '}
                 <span role="img" aria-label="sparkling star">
                   ✨
                 </span>

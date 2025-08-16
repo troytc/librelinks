@@ -174,7 +174,11 @@ const ProfilePage = () => {
                 id={id}
                 key={id}
                 {...link}
-                registerClicks={() => handleRegisterClick(id)}
+                registerClicks={() => {
+                  if (!link.isHeader) {
+                    handleRegisterClick(id);
+                  }
+                }}
               />
             ))}
 

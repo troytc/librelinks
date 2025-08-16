@@ -15,6 +15,7 @@ const PopoverMobile = ({
   archiveProps,
   deleteAlertProps,
   closeDrawer,
+  isHeader,
 }) => {
   return (
     <>
@@ -34,6 +35,7 @@ const PopoverMobile = ({
               id={id}
               title={title}
               url={url}
+              isHeader={isHeader}
             />
           </Dialog.Root>
           <AlertDialog.Root>

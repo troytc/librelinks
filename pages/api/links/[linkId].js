@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PATCH') {
-      const { newTitle, newUrl, archived } = req.body;
+      const { newTitle, newUrl, archived, isHeader } = req.body;
 
       const updatedLink = await db.link.update({
         where: {
@@ -21,8 +21,9 @@ export default async function handler(req, res) {
         },
         data: {
           title: newTitle,
-          url: newUrl,
+          url: isHeader ? null : newUrl,
           archived: archived,
+          isHeader: isHeader ?? undefined,
         },
       });
 
