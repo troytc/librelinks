@@ -12,6 +12,25 @@ export const metadata = {
     'Librelinks is an opensource link in bio tool that helps you easily manage your links, transforming your online presence.',
 };
 
+export async function getServerSideProps() {
+  try {
+    const base = process.env.NEXTAUTH_URL || '';
+    const res = await fetch(`${base}/api/app-settings`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.rootEnabled && data?.rootHandle) {
+        return {
+          redirect: {
+            destination: `/${data.rootHandle}`,
+            permanent: false,
+          },
+        };
+      }
+    }
+  } catch (e) {}
+  return { props: {} };
+}
+
 const Home = () => {
   const session = useSession();
   const isAuthenticated = session.status === 'authenticated' ? true : false;

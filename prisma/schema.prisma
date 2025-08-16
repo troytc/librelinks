@@ -71,3 +71,12 @@ model Link {
 }
 
 
+model AppSettings {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  rootHandle   String?
+  rootEnabled  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+

@@ -28,6 +28,10 @@ const Settings = () => {
   const [image, setImage] = useState('');
   const [handle, setHandle] = useState('');
 
+  // admin root profile settings
+  const [rootEnabled, setRootEnabled] = useState(false);
+  const [rootHandle, setRootHandle] = useState('');
+
   const { isMobile } = useMediaQuery();
 
   const queryClient = useQueryClient();
@@ -44,6 +48,22 @@ const Settings = () => {
     fetchedUser?.image,
     fetchedUser?.handle,
   ]);
+
+  useEffect(() => {
+    // load app settings for admin
+    const loadSettings = async () => {
+      try {
+        const { data } = await axios.get('/api/app-settings');
+        if (data) {
+          setRootEnabled(Boolean(data.rootEnabled));
+          setRootHandle(data.rootHandle || '');
+        }
+      } catch (e) {
+        // ignore for non-admins or missing settings
+      }
+    };
+    if (currentUser?.admin) loadSettings();
+  }, [currentUser?.admin]);
 
   // edit profile details
   const editMutation = useMutation(
@@ -82,6 +102,21 @@ const Settings = () => {
       await editMutation.mutateAsync({ bio, username, image: '', handle });
     }
   };
+
+  // update app settings (admin only)
+  const updateSettings = useMutation(
+    async (payload) => {
+      return axios.put('/api/app-settings', payload);
+    },
+    {
+      onSuccess: () => {
+        toast.success('Settings updated');
+      },
+      onError: () => {
+        toast.error('Failed to update settings');
+      },
+    }
+  );
 
   // delete user's account
   const deleteMutation = useMutation(
@@ -175,6 +210,47 @@ const Settings = () => {
             </div>
           </div>
 
+          {currentUser?.admin && (
+            <div className="max-w-[690px] mx-auto my-10" id="root-profile">
+              <h3 className="text-xl font-semibold mb-1">Root Profile</h3>
+              <h3 className="mb-4 text-gray-600 text-sm">
+                <Balancer>Show a specific profile on the root URL.</Balancer>
+              </h3>
+              <div className="w-full h-auto border bg-white rounded-lg p-6 ">
+                <div className="flex items-center gap-4 mb-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={rootEnabled}
+                      onChange={async (e) => {
+                        const enabled = e.target.checked;
+                        setRootEnabled(enabled);
+                        await updateSettings.mutateAsync({ rootEnabled: enabled, rootHandle });
+                      }}
+                    />
+                    <span>Enable root profile</span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    value={rootHandle}
+                    onChange={(e) => setRootHandle(e.target.value)}
+                    placeholder="@handle to show at /"
+                    className="outline-none w-full p-3 h-[45px] rounded-lg border bg-gray-50 text-black focus:border-slate-900"
+                  />
+                  <button
+                    onClick={async () => {
+                      await updateSettings.mutateAsync({ rootEnabled, rootHandle });
+                    }}
+                    className="border-none rounded-lg h-[45px] px-4 text-white bg-slate-900 hover:bg-slate-700"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="max-w-[690px] mx-auto my-10">
             <h3 className="text-xl font-semibold mb-1">Danger Zone</h3>
             <h3 className="mb-4 text-gray-600 text-sm">
@@ -188,7 +264,7 @@ const Settings = () => {
                 <AlertDialog.Trigger asChild>
                   <button
                     className="border-none w-full lg:w-[200px] rounded-lg h-auto p-3
-									  text-white bg-red-600 hover:bg-red-500"
+																							text-white bg-red-600 hover:bg-red-500"
                   >
                     Delete Account
                   </button>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Wand, Link2, BarChart, CircleDot, Settings2 } from 'lucide-react';
+import { Wand, Link2, BarChart, CircleDot, Settings2, Shield } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import UserAccountNavDesktop from '@/components/utils/usernavbutton-desktop';
 import ShareButton from '@/components/utils/share-button';
@@ -8,7 +8,7 @@ import SiteHeader from './main-nav';
 import ShareModal from '@/components/shared/modals/share-modal';
 import React from 'react';
 
-const items = [
+const baseItems = [
   {
     title: 'Links',
     href: '/admin',
@@ -35,6 +35,14 @@ const items = [
 
 const Navbar = ({ showName = false, isHomePage = true }) => {
   const session = useSession();
+
+  const items = React.useMemo(() => {
+    const list = [...baseItems];
+    if (session?.data?.user?.admin) {
+      list.unshift({ title: 'Admin Panel', href: '/admin/panel', icon: <Shield color="black" size={18} /> });
+    }
+    return list;
+  }, [session?.data?.user?.admin]);
 
   return (
     <>

@@ -14,6 +14,11 @@ export default async function middleware(req) {
     '/onboarding',
   ];
 
+  // allow public GET to app-settings
+  if (path === '/api/app-settings' && req.method === 'GET') {
+    return NextResponse.next();
+  }
+
   // If it's the root path, just render it
   if (path === '/') {
     return NextResponse.next();
@@ -28,6 +33,15 @@ export default async function middleware(req) {
     return NextResponse.redirect(new URL('/login', req.url));
   } else if (session && (path === '/login' || path === '/register')) {
     return NextResponse.redirect(new URL('/admin', req.url));
+  }
+
+  // restrict admin routes to admin users only
+  if (
+    session &&
+    protectedPaths.some((p) => p.startsWith('/admin') && path.startsWith(p)) &&
+    !session.admin
+  ) {
+    return NextResponse.redirect(new URL('/', req.url));
   }
   return NextResponse.next();
 }
