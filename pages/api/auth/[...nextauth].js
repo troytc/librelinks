@@ -36,6 +36,7 @@ export const authOptions = {
         session.user.name = token.name;
         session.user.email = token.email;
         session.user.handle = token.handle;
+        session.user.admin = token.admin;
       }
       return session;
     },
@@ -49,6 +50,7 @@ export const authOptions = {
 
       if (!dbUser) {
         token.id = user.id;
+        token.admin = user?.admin ?? false;
         return token;
       }
 
@@ -68,6 +70,7 @@ export const authOptions = {
         name: dbUser.name,
         email: dbUser.email,
         handle: dbUser.handle,
+        admin: dbUser.admin,
         buttonStyle: dbUser.buttonStyle,
         themePalette: dbUser.themePalette,
       };

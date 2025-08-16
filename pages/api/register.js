@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     const user = await db.user.create({
       data: {
         email,
+        admin: false,
       },
     });
 

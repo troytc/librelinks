@@ -18,6 +18,7 @@ model User {
   image          String?  
   email          String?   @unique
   emailVerified  DateTime?
+  admin          Boolean   @default(false)
   totalViews     Int       @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
